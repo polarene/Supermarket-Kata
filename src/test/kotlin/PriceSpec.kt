@@ -1,23 +1,28 @@
 import io.kotest.assertions.assertSoftly
-import io.kotest.core.spec.style.StringSpec
+import io.kotest.core.spec.style.FreeSpec
+import io.kotest.datatest.WithDataTestName
+import io.kotest.datatest.withData
 import io.kotest.matchers.shouldBe
 
-class PriceSpec : StringSpec({
-    "test totals" {
-        assertSoftly {
-            price("") shouldBe 0
-            price("A") shouldBe 50
-            price("AB") shouldBe 80
-            price("CDBA") shouldBe 115
-            price("AA") shouldBe 100
-            price("AAA") shouldBe 130
-            price("AAAA") shouldBe 180
-            price("AAAAA") shouldBe 230
-            price("AAAAAA") shouldBe 260
-            price("AAAB") shouldBe 160
-            price("AAABB") shouldBe 175
-            price("AAABBD") shouldBe 190
-            price("DABABA") shouldBe 190
+@Suppress("EXPERIMENTAL_API_USAGE")
+class PriceSpec : FreeSpec({
+    "test totals" - {
+        withData(
+            Transaction("", 0),
+            Transaction("A", 50),
+            Transaction("AB", 80),
+            Transaction("CDBA", 115),
+            Transaction("AA", 100),
+            Transaction("AAA", 130),
+            Transaction("AAAA", 180),
+            Transaction("AAAAA", 230),
+            Transaction("AAAAAA", 260),
+            Transaction("AAAB", 160),
+            Transaction("AAABB", 175),
+            Transaction("AAABBD", 190),
+            Transaction("DABABA", 190),
+        ) { (goods, total) ->
+            price(goods) shouldBe total
         }
     }
 
@@ -45,4 +50,8 @@ fun price(goods: String): Int {
     val co = CheckOut(RULES)
     goods.forEach { co.scan(it) }
     return co.total()
+}
+
+data class Transaction(val goods: String, val total: Int) : WithDataTestName {
+    override fun dataTestName() = "|${goods}|"
 }
